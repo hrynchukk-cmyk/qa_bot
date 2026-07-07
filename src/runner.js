@@ -102,7 +102,14 @@ export async function auditViewport(browser, url, viewport, opts) {
       timeout: opts.timeout,
     });
 
-    return { ...viewport, httpStatus, issues, metrics, screenshotBuffer };
+    let links = null;
+    if (opts.collectLinks) {
+      links = await page.evaluate(() =>
+        Array.from(document.querySelectorAll('a[href]'), (a) => a.href).slice(0, 800)
+      );
+    }
+
+    return { ...viewport, httpStatus, issues, metrics, screenshotBuffer, links };
   } finally {
     await context.close();
   }
@@ -120,10 +127,10 @@ export function summarize(issueLists) {
   return summary;
 }
 
-export async function saveScreenshot(outDir, viewport, buffer) {
+export async function saveScreenshot(outDir, viewport, buffer, prefix = '') {
   const dir = path.join(outDir, 'screenshots');
   await mkdir(dir, { recursive: true });
-  const name = `${viewport.label}-${viewport.width}x${viewport.height}.png`;
+  const name = `${prefix}${viewport.label}-${viewport.width}x${viewport.height}.png`;
   await writeFile(path.join(dir, name), buffer);
   return path.posix.join('screenshots', name);
 }

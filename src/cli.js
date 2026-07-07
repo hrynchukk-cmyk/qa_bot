@@ -18,6 +18,7 @@ program
     '390x844,768x1024,1366x768,1920x1080'
   )
   .option('-o, --out <dir>', 'тека для звіту', 'qa-report')
+  .option('-p, --pages <n>', 'скільки сторінок сайту обійти (1 = лише вказану)', '1')
   .option('--figma <url>', 'посилання на файл/фрейм Figma для порівняння')
   .option('--figma-token <token>', 'персональний токен Figma (або змінна FIGMA_TOKEN)')
   .option('--figma-frames <n>', 'максимальна кількість фреймів для порівняння', '8')
@@ -42,6 +43,7 @@ program
       const report = await runAudit({
         url,
         viewports: parseViewports(opts.viewports),
+        maxPages: Math.min(Math.max(Number(opts.pages) || 1, 1), 50),
         outDir: opts.out,
         figma,
         timeout: Number(opts.timeout),
@@ -55,6 +57,7 @@ program
       const s = report.summary;
       console.log('');
       console.log('Підсумок:');
+      if (report.pages.length > 1) console.log(`  Сторінок:      ${report.pages.length}`);
       console.log(`  Помилки:       ${s.errors}`);
       console.log(`  Попередження:  ${s.warnings}`);
       console.log(`  Зауваження:    ${s.infos}`);

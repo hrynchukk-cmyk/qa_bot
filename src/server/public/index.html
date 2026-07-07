@@ -50,6 +50,10 @@
     border-radius: 999px; cursor: pointer; color: #334155;
   }
   .presets button:hover { border-color: #3b82f6; color: #1d4ed8; }
+  .checkbox-label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; margin: 0; }
+  .checkbox-label input { width: 16px; height: 16px; accent-color: #2563eb; }
+  .crawl-limit { font-size: 14px; color: #334155; margin-left: 10px; }
+  .crawl-limit input[type="number"] { width: 64px; padding: 5px 8px; font-size: 14px; border: 1px solid #cbd5e1; border-radius: 8px; }
 
   main { min-width: 0; }
   #placeholder {
@@ -113,6 +117,17 @@
           </div>
         </div>
 
+        <div class="field crawl-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="crawl">
+            Обійти всі сторінки сайту
+          </label>
+          <span class="crawl-limit" id="crawlLimit" hidden>
+            до <input type="number" id="maxPages" value="10" min="2" max="50"> сторінок
+          </span>
+          <div class="hint" style="margin-top:6px">Бот збере внутрішні посилання та sitemap.xml і перевірить кожну сторінку. Без галочки — лише вказана сторінка.</div>
+        </div>
+
         <details class="figma">
           <summary>Порівняти з макетом Figma (необов'язково)</summary>
           <div class="field">
@@ -161,6 +176,10 @@
     b.addEventListener('click', () => { $('viewports').value = b.dataset.v; })
   );
 
+  $('crawl').addEventListener('change', () => {
+    $('crawlLimit').hidden = !$('crawl').checked;
+  });
+
   $('form').addEventListener('submit', async (e) => {
     e.preventDefault();
     clearTimeout(pollTimer);
@@ -180,6 +199,8 @@
         body: JSON.stringify({
           url: $('url').value,
           viewports: $('viewports').value,
+          crawl: $('crawl').checked,
+          maxPages: $('maxPages').value,
           figmaUrl: $('figmaUrl').value,
           figmaToken: $('figmaToken').value,
         }),
@@ -212,7 +233,8 @@
         $('statusLine').innerHTML = '<span class="spinner"></span>Тестую <b>' + escapeHtml(job.url) + '</b>…';
         pollTimer = setTimeout(() => poll(id), 1500);
       } else if (job.status === 'done') {
-        $('statusLine').innerHTML = '✅ Перевірку завершено: <b>' + escapeHtml(job.url) + '</b>';
+        const pagesNote = job.pagesAudited > 1 ? ' (' + job.pagesAudited + ' сторінок)' : '';
+        $('statusLine').innerHTML = '✅ Перевірку завершено: <b>' + escapeHtml(job.url) + '</b>' + pagesNote;
         $('cErr').textContent = job.summary.errors;
         $('cWarn').textContent = job.summary.warnings;
         $('cInfo').textContent = job.summary.infos;

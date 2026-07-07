@@ -83,6 +83,31 @@ function viewportSection(vp) {
   </details>`;
 }
 
+function countsLine(summary) {
+  return `${summary.errors} помилок · ${summary.warnings} попереджень · ${summary.infos} зауважень`;
+}
+
+function pageSection(pg, index) {
+  let pathLabel = pg.url;
+  try {
+    const u = new URL(pg.url);
+    pathLabel = (u.pathname || '/') + u.search;
+  } catch {
+    /* keep full url */
+  }
+  const body = pg.error
+    ? `<p class="err">Сторінку не вдалося перевірити: ${esc(pg.error)}</p>`
+    : pg.viewports.map(viewportSection).join('');
+  return `<details class="page" ${index === 0 ? 'open' : ''}>
+    <summary>
+      <strong>${esc(pathLabel)}</strong>
+      <span class="muted">(${countsLine(pg.summary)})</span>
+      ${pg.title ? `<span class="muted"> — ${esc(pg.title)}</span>` : ''}
+    </summary>
+    <div class="page-body">${body}</div>
+  </details>`;
+}
+
 function figmaSection(figma) {
   if (!figma) return '';
   const cards = (figma.comparisons || [])
@@ -137,6 +162,9 @@ export function renderHtmlReport(report) {
   .chip { padding: 10px 16px; border-radius: 10px; background: #fff; border: 1px solid #e2e8f0; }
   .chip b { display: block; font-size: 22px; }
   .chip.err b { color: #dc2626; } .chip.warn b { color: #b45309; } .chip.info b { color: #1d4ed8; }
+  details.page { border: 1px solid #cbd5e1; border-radius: 14px; margin: 14px 0; background: #f8fafc; }
+  details.page > summary { cursor: pointer; padding: 14px 18px; font-size: 16px; }
+  .page-body { padding: 0 14px 14px; }
   details.viewport { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; margin: 12px 0; }
   details.viewport > summary { cursor: pointer; padding: 14px 18px; font-size: 16px; }
   .vp-body { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; padding: 0 18px 18px; }
@@ -176,8 +204,17 @@ export function renderHtmlReport(report) {
     <div class="chip warn"><b>${s.warnings}</b>попереджень</div>
     <div class="chip info"><b>${s.infos}</b>зауважень</div>
   </div>
-  <h2>Перевірка на різних розширеннях</h2>
-  ${report.viewports.map(viewportSection).join('')}
+  ${
+    report.pages.length === 1
+      ? `<h2>Перевірка на різних розширеннях</h2>
+         ${
+           report.pages[0].error
+             ? `<p class="err">Сторінку не вдалося перевірити: ${esc(report.pages[0].error)}</p>`
+             : report.pages[0].viewports.map(viewportSection).join('')
+         }`
+      : `<h2>Перевірені сторінки (${report.pages.length})</h2>
+         ${report.pages.map(pageSection).join('')}`
+  }
   ${figmaSection(report.figma)}
 </div>
 </body>

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Про нас — демо</title>
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 20px; }
+    /* Баг: блок з фіксованою шириною, вилазить на мобільних */
+    .team-table { width: 900px; background: #ddd6fe; padding: 16px; }
+    /* Баг: дрібний дисклеймер */
+    .disclaimer { font-size: 8px; color: #666; }
+  </style>
+</head>
+<body>
+  <h1>Про нас</h1>
+  <p><a href="/">На головну</a></p>
+
+  <div class="team-table" id="team">Таблиця команди з фіксованою шириною 900px — вилазить за екран на мобільних.</div>
+
+  <p class="disclaimer">Дрібний дисклеймер 8px, який ніхто не прочитає.</p>
+
+  <img src="/images/team-photo-missing.jpg" alt="Фото команди">
+</body>
+</html>

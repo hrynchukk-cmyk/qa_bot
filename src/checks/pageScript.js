@@ -185,6 +185,9 @@ export function pageAudit(opts) {
     if (candidates.length >= 1200) break;
     if (!(LEAF_TAGS[el.tagName] || el.tagName === 'A' || hasDirectText(el))) continue;
     if (!isVisible(el)) continue;
+    // Inline elements wrap across lines, so their bounding boxes legitimately
+    // intersect with neighbours — not a layout bug.
+    if (styleOf(el).display === 'inline') continue;
     // Fixed/sticky elements legitimately overlay content (headers, cookie bars).
     if (hasFixedOrStickyAncestor(el)) continue;
     const r = el.getBoundingClientRect();

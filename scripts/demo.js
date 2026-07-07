@@ -41,8 +41,9 @@ const url = `http://127.0.0.1:${port}/`;
 console.log(`Демо-сайт із навмисними помилками верстки: ${url}\n`);
 
 try {
-  const report = await runAudit({ url, outDir: 'demo-report' });
+  const report = await runAudit({ url, outDir: 'demo-report', maxPages: 5 });
   console.log('\nПідсумок:', JSON.stringify(report.summary));
+  console.log('Перевірено сторінок:', report.pages.length);
   console.log(`Звіт: ${path.resolve('demo-report/index.html')}`);
 } finally {
   server.close();

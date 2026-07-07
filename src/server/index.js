@@ -24,6 +24,7 @@ function publicJob(job) {
     createdAt: job.createdAt,
     log: job.log,
     summary: job.summary || null,
+    pagesAudited: job.pagesAudited || null,
     figmaComparisons: job.figmaComparisons || null,
     error: job.error || null,
     reportUrl: job.status === 'done' ? `/reports/${job.id}/index.html` : null,
@@ -40,6 +41,7 @@ async function executeJob(job) {
     const report = await runAudit({
       url: job.url,
       viewports: job.viewports,
+      maxPages: job.maxPages || 1,
       outDir: path.join(RUNS_DIR, job.id),
       figma: job.figma,
       log: (line) => {
@@ -48,6 +50,7 @@ async function executeJob(job) {
       },
     });
     job.summary = report.summary;
+    job.pagesAudited = report.pages ? report.pages.length : 1;
     if (report.figma) {
       job.figmaComparisons = report.figma.comparisons.map((c) => ({
         name: c.frame.name,
@@ -100,6 +103,14 @@ app.post('/api/audits', (req, res) => {
     return res.status(400).json({ error: err.message });
   }
 
+  let maxPages = 1;
+  if (body.crawl) {
+    maxPages = Number.parseInt(body.maxPages, 10) || 10;
+    if (maxPages < 1 || maxPages > 50) {
+      return res.status(400).json({ error: 'Кількість сторінок має бути від 1 до 50.' });
+    }
+  }
+
   let figma = null;
   const figmaUrl = String(body.figmaUrl || '').trim();
   if (figmaUrl) {
@@ -117,6 +128,7 @@ app.post('/api/audits', (req, res) => {
     url,
     figmaUrl: figmaUrl || null,
     viewports,
+    maxPages,
     figma,
     status: 'queued',
     createdAt: Date.now(),
