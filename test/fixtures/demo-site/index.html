@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<!-- Навмисно без lang — бот має це помітити -->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Демо-сайт з помилками верстки</title>
+  <style>
+    body { font-family: sans-serif; margin: 0; padding: 20px; }
+    section { margin-bottom: 40px; }
+
+    /* Баг 1: фіксована ширина → горизонтальний скрол на мобільних */
+    .wide-banner {
+      width: 1400px;
+      background: #3b82f6;
+      color: #fff;
+      padding: 20px;
+    }
+
+    /* Баг 2: абсолютно позиціоновані елементи, що перекриваються */
+    .overlap-zone { position: relative; height: 120px; }
+    .overlap-a, .overlap-b {
+      position: absolute;
+      top: 10px;
+      width: 220px;
+      height: 80px;
+      padding: 10px;
+    }
+    .overlap-a { left: 10px; background: #fbbf24; }
+    .overlap-b { left: 120px; background: #34d399; }
+
+    /* Баг 3: текст, що обрізається */
+    .clipped-text {
+      width: 140px;
+      height: 22px;
+      overflow: hidden;
+      white-space: nowrap;
+      background: #e2e8f0;
+    }
+
+    /* Баг 4: занадто дрібний шрифт */
+    .tiny-text { font-size: 9px; }
+
+    /* Баг 5: спотворене зображення (1×1 розтягнуто у 300×80) */
+    .stretched { width: 300px; height: 80px; }
+
+    /* Баг 6: крихітна кнопка закриття */
+    .tiny-close {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      font-size: 10px;
+      line-height: 14px;
+      text-align: center;
+      background: #ef4444;
+      color: #fff;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Демо-сторінка з навмисними помилками верстки</h1>
+
+  <section>
+    <div class="wide-banner">Банер із фіксованою шириною 1400px — на мобільному створює горизонтальний скрол.</div>
+  </section>
+
+  <section class="overlap-zone">
+    <div class="overlap-a">Перший блок із текстом</div>
+    <div class="overlap-b">Другий блок, що наліз на перший</div>
+  </section>
+
+  <section>
+    <div class="clipped-text">Цей довгий текст не вміщується у вузький блок і обрізається.</div>
+  </section>
+
+  <section>
+    <p class="tiny-text">Дрібний текст 9px, який важко читати.</p>
+  </section>
+
+  <section>
+    <img src="/images/does-not-exist.png" alt="Бите зображення" width="200" height="100">
+    <img class="stretched"
+         src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==">
+  </section>
+
+  <section>
+    <p>Маленька ціль для натискання: <a class="tiny-close" href="#" aria-label="Закрити">✕</a></p>
+  </section>
+
+  <script>
+    console.error('Демо: помилка в консолі');
+    setTimeout(function () { nonExistentFunction(); }, 50);
+    fetch('/api/missing').catch(function () {});
+  </script>
+</body>
+</html>

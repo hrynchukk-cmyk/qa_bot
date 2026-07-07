@@ -1,0 +1,6 @@
+node_modules/
+qa-report/
+demo-report/
+*.log
+.env
+.DS_Store
