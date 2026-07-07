@@ -6,14 +6,27 @@
 <title>QA Design Bot — тестування верстки сайту</title>
 <style>
   * { box-sizing: border-box; }
+  html, body { height: 100%; }
   body {
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     margin: 0; background: #f1f5f9; color: #0f172a;
   }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 40px 16px 80px; }
-  h1 { font-size: 26px; margin: 0 0 6px; }
-  .sub { color: #64748b; margin: 0 0 28px; }
-  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 24px; margin-bottom: 20px; }
+  .app {
+    display: grid;
+    grid-template-columns: 420px minmax(0, 1fr);
+    gap: 24px;
+    padding: 24px;
+    min-height: 100vh;
+    align-items: start;
+  }
+  @media (max-width: 1000px) {
+    .app { grid-template-columns: 1fr; }
+    aside { position: static !important; }
+  }
+  aside { position: sticky; top: 24px; }
+  h1 { font-size: 24px; margin: 0 0 6px; }
+  .sub { color: #64748b; margin: 0 0 20px; font-size: 14px; }
+  .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 14px; padding: 22px; }
   label { display: block; font-weight: 600; font-size: 14px; margin: 0 0 6px; }
   .hint { font-weight: 400; color: #94a3b8; }
   input[type="text"], input[type="url"], input[type="password"] {
@@ -21,8 +34,8 @@
     border: 1px solid #cbd5e1; border-radius: 10px; outline: none;
   }
   input:focus { border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59,130,246,.15); }
-  .field { margin-bottom: 18px; }
-  details.figma { border: 1px dashed #cbd5e1; border-radius: 10px; padding: 12px 16px; margin-bottom: 18px; }
+  .field { margin-bottom: 16px; }
+  details.figma { border: 1px dashed #cbd5e1; border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; }
   details.figma summary { cursor: pointer; font-weight: 600; font-size: 14px; color: #334155; }
   details.figma .field:first-of-type { margin-top: 14px; }
   button.primary {
@@ -37,6 +50,12 @@
     border-radius: 999px; cursor: pointer; color: #334155;
   }
   .presets button:hover { border-color: #3b82f6; color: #1d4ed8; }
+
+  main { min-width: 0; }
+  #placeholder {
+    border: 2px dashed #cbd5e1; border-radius: 14px; padding: 60px 24px;
+    text-align: center; color: #94a3b8; font-size: 15px;
+  }
   #status { display: none; }
   .spinner {
     display: inline-block; width: 16px; height: 16px; border-radius: 50%;
@@ -47,79 +66,91 @@
   .log {
     background: #0f172a; color: #cbd5e1; font-family: ui-monospace, monospace;
     font-size: 13px; border-radius: 10px; padding: 14px 16px; margin-top: 14px;
-    max-height: 220px; overflow-y: auto; white-space: pre-wrap;
+    max-height: 180px; overflow-y: auto; white-space: pre-wrap;
   }
   .error-box { background: #fee2e2; color: #b91c1c; border-radius: 10px; padding: 12px 16px; margin-top: 14px; font-size: 14px; }
-  .chips { display: flex; gap: 12px; margin: 16px 0; flex-wrap: wrap; }
-  .chip { padding: 10px 18px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; }
-  .chip b { display: block; font-size: 22px; }
+  .result-head { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; margin: 16px 0 0; }
+  .chips { display: flex; gap: 12px; flex-wrap: wrap; }
+  .chip { padding: 8px 16px; border-radius: 10px; background: #f8fafc; border: 1px solid #e2e8f0; }
+  .chip b { display: block; font-size: 20px; }
   .chip.err b { color: #dc2626; } .chip.warn b { color: #b45309; } .chip.info b { color: #1d4ed8; }
   a.report-btn {
     display: inline-block; padding: 11px 22px; background: #16a34a; color: #fff;
-    font-weight: 600; border-radius: 10px; text-decoration: none;
+    font-weight: 600; border-radius: 10px; text-decoration: none; margin-left: auto;
   }
   a.report-btn:hover { background: #15803d; }
-  .figma-results { margin-top: 12px; font-size: 14px; }
+  .figma-results { margin: 12px 0 0; font-size: 14px; padding-left: 4px; list-style: none; }
   .figma-results li { margin: 4px 0; }
   iframe#preview {
-    width: 100%; height: 640px; border: 1px solid #e2e8f0; border-radius: 12px;
+    width: 100%;
+    height: calc(100vh - 320px);
+    min-height: 480px;
+    border: 1px solid #e2e8f0; border-radius: 12px;
     margin-top: 18px; background: #fff;
   }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>🔍 QA Design Bot</h1>
-  <p class="sub">Вставте посилання на сайт — бот перевірить верстку та дизайн на різних розширеннях екрана і збере детальний звіт. За бажанням додайте макет Figma для попіксельного порівняння.</p>
+<div class="app">
+  <aside>
+    <h1>🔍 QA Design Bot</h1>
+    <p class="sub">Вставте посилання на сайт — бот перевірить верстку та дизайн на різних розширеннях екрана і збере детальний звіт зі скриншотами проблемних елементів. За бажанням додайте макет Figma для попіксельного порівняння.</p>
 
-  <div class="card">
-    <form id="form">
-      <div class="field">
-        <label for="url">Посилання на сайт</label>
-        <input type="text" id="url" placeholder="https://example.com" required autocomplete="off">
-      </div>
-
-      <div class="field">
-        <label for="viewports">Розширення екрана <span class="hint">— через кому, ШИРИНАxВИСОТА</span></label>
-        <input type="text" id="viewports" value="390x844,768x1024,1366x768,1920x1080" autocomplete="off">
-        <div class="presets">
-          <button type="button" data-v="390x844,768x1024,1366x768,1920x1080">Стандартний набір</button>
-          <button type="button" data-v="360x800,390x844,414x896">Лише мобільні</button>
-          <button type="button" data-v="1366x768,1536x864,1920x1080">Лише десктопи</button>
-        </div>
-      </div>
-
-      <details class="figma">
-        <summary>Порівняти з макетом Figma (необов'язково)</summary>
+    <div class="card">
+      <form id="form">
         <div class="field">
-          <label for="figmaUrl">Посилання на файл або фрейм Figma</label>
-          <input type="text" id="figmaUrl" placeholder="https://www.figma.com/design/…?node-id=1-23" autocomplete="off">
+          <label for="url">Посилання на сайт</label>
+          <input type="text" id="url" placeholder="https://example.com" required autocomplete="off">
         </div>
+
         <div class="field">
-          <label for="figmaToken">Токен Figma <span class="hint">— Settings → Security → Personal access tokens</span></label>
-          <input type="password" id="figmaToken" placeholder="figd_…" autocomplete="off">
+          <label for="viewports">Розширення екрана <span class="hint">— ШИРИНАxВИСОТА</span></label>
+          <input type="text" id="viewports" value="390x844,768x1024,1366x768,1920x1080" autocomplete="off">
+          <div class="presets">
+            <button type="button" data-v="390x844,768x1024,1366x768,1920x1080">Стандартний набір</button>
+            <button type="button" data-v="360x800,390x844,414x896">Лише мобільні</button>
+            <button type="button" data-v="1366x768,1536x864,1920x1080">Лише десктопи</button>
+          </div>
         </div>
-      </details>
 
-      <button type="submit" class="primary" id="submitBtn">Перевірити сайт</button>
-    </form>
-  </div>
+        <details class="figma">
+          <summary>Порівняти з макетом Figma (необов'язково)</summary>
+          <div class="field">
+            <label for="figmaUrl">Посилання на файл або фрейм Figma</label>
+            <input type="text" id="figmaUrl" placeholder="https://www.figma.com/design/…?node-id=1-23" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="figmaToken">Токен Figma <span class="hint">— Settings → Security → Personal access tokens</span></label>
+            <input type="password" id="figmaToken" placeholder="figd_…" autocomplete="off">
+          </div>
+        </details>
 
-  <div class="card" id="status">
-    <div id="statusLine"></div>
-    <div class="log" id="log" hidden></div>
-    <div class="error-box" id="errorBox" hidden></div>
-    <div id="result" hidden>
-      <div class="chips">
-        <div class="chip err"><b id="cErr">0</b>помилок</div>
-        <div class="chip warn"><b id="cWarn">0</b>попереджень</div>
-        <div class="chip info"><b id="cInfo">0</b>зауважень</div>
-      </div>
-      <ul class="figma-results" id="figmaResults" hidden></ul>
-      <a class="report-btn" id="reportLink" href="#" target="_blank">Відкрити повний звіт ↗</a>
-      <iframe id="preview" title="Звіт"></iframe>
+        <button type="submit" class="primary" id="submitBtn">Перевірити сайт</button>
+      </form>
     </div>
-  </div>
+  </aside>
+
+  <main>
+    <div id="placeholder">Результати перевірки з'являться тут.<br>Вставте посилання ліворуч і натисніть «Перевірити сайт».</div>
+
+    <div class="card" id="status">
+      <div id="statusLine"></div>
+      <div class="log" id="log" hidden></div>
+      <div class="error-box" id="errorBox" hidden></div>
+      <div id="result" hidden>
+        <div class="result-head">
+          <div class="chips">
+            <div class="chip err"><b id="cErr">0</b>помилок</div>
+            <div class="chip warn"><b id="cWarn">0</b>попереджень</div>
+            <div class="chip info"><b id="cInfo">0</b>зауважень</div>
+          </div>
+          <a class="report-btn" id="reportLink" href="#" target="_blank">Відкрити повний звіт ↗</a>
+        </div>
+        <ul class="figma-results" id="figmaResults" hidden></ul>
+        <iframe id="preview" title="Звіт"></iframe>
+      </div>
+    </div>
+  </main>
 </div>
 
 <script>
@@ -133,6 +164,7 @@
   $('form').addEventListener('submit', async (e) => {
     e.preventDefault();
     clearTimeout(pollTimer);
+    $('placeholder').style.display = 'none';
     $('status').style.display = 'block';
     $('result').hidden = true;
     $('errorBox').hidden = true;

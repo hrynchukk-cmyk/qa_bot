@@ -43,6 +43,11 @@ function issueRow(issue) {
       ${esc(issue.message)}
       ${issue.selector ? `<div><code>${esc(issue.selector)}</code></div>` : ''}
       ${issue.details ? `<div class="details">${esc(issue.details)}</div>` : ''}
+      ${
+        issue.image
+          ? `<a href="${esc(issue.image)}" target="_blank"><img class="issue-img" src="${esc(issue.image)}" loading="lazy" alt="Фрагмент сторінки з проблемним елементом"></a>`
+          : ''
+      }
     </td>
   </tr>`;
 }
@@ -124,7 +129,7 @@ export function renderHtmlReport(report) {
   :root { color-scheme: light; }
   * { box-sizing: border-box; }
   body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; margin: 0; background: #f8fafc; color: #0f172a; }
-  .wrap { max-width: 1200px; margin: 0 auto; padding: 24px 16px 64px; }
+  .wrap { max-width: 1600px; margin: 0 auto; padding: 24px 20px 64px; }
   h1 { font-size: 24px; margin: 0 0 4px; }
   h2 { font-size: 20px; margin: 32px 0 12px; }
   .muted { color: #64748b; font-weight: normal; font-size: 0.9em; }
@@ -142,6 +147,7 @@ export function renderHtmlReport(report) {
   .check { white-space: nowrap; font-weight: 600; }
   code { background: #f1f5f9; padding: 1px 6px; border-radius: 6px; font-size: 12px; word-break: break-all; }
   .details { color: #64748b; font-size: 12px; margin-top: 2px; word-break: break-all; }
+  .issue-img { display: block; max-width: 320px; max-height: 160px; margin-top: 8px; border: 1px solid #e2e8f0; border-radius: 8px; object-fit: contain; background: #fff; }
   .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
   .ok { color: #15803d; }
   .err { color: #dc2626; }

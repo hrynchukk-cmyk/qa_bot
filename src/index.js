@@ -3,6 +3,7 @@ import path from 'node:path';
 import { launchBrowser } from './browser.js';
 import { auditViewport, saveScreenshot, summarize } from './runner.js';
 import { runFigmaComparison } from './figma/index.js';
+import { saveIssueCrops } from './report/crops.js';
 import { renderHtmlReport } from './report/html.js';
 import { DEFAULT_VIEWPORTS, parseViewports } from './viewports.js';
 
@@ -64,6 +65,12 @@ export async function runAudit(options) {
         fullPage,
       });
       const screenshot = await saveScreenshot(outDir, vp, result.screenshotBuffer);
+      await saveIssueCrops(
+        result.screenshotBuffer,
+        result.issues,
+        outDir,
+        `${vp.label}-${vp.width}x${vp.height}`
+      );
       delete result.screenshotBuffer;
       report.viewports.push({ ...result, screenshot });
       const errs = result.issues.filter((i) => i.severity === 'error').length;

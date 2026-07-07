@@ -84,6 +84,26 @@ export function pageAudit(opts) {
 
   const round = (n) => Math.round(n * 10) / 10;
 
+  // Document-space rect for cropping an element screenshot from the
+  // full-page screenshot (the page is scrolled to the top when this runs).
+  const rectData = (r) => ({
+    x: Math.round(r.left + window.scrollX),
+    y: Math.round(r.top + window.scrollY),
+    width: Math.round(r.width),
+    height: Math.round(r.height),
+  });
+
+  const unionRect = (r1, r2) => {
+    const left = Math.min(r1.left, r2.left);
+    const top = Math.min(r1.top, r2.top);
+    return rectData({
+      left,
+      top,
+      width: Math.max(r1.right, r2.right) - left,
+      height: Math.max(r1.bottom, r2.bottom) - top,
+    });
+  };
+
   // Collect elements once (with a safety cap for huge pages).
   const SKIP_TAGS = { SCRIPT: 1, STYLE: 1, NOSCRIPT: 1, TEMPLATE: 1, LINK: 1, META: 1, TITLE: 1, BR: 1, WBR: 1 };
   const all = [];
@@ -153,6 +173,7 @@ export function pageAudit(opts) {
       severity: 'warning',
       message: `Елемент виходить за межі екрана на ${amount}px ${side} (ширина елемента ${round(o.r.width)}px).`,
       selector: cssPath(o.el),
+      rect: rectData(o.r),
     });
   }
 
@@ -193,6 +214,7 @@ export function pageAudit(opts) {
         message: `Елементи перекривають один одного (зона перетину ${round(ix)}×${round(iy)}px).`,
         selector: cssPath(a.el),
         details: 'перетинається з: ' + cssPath(b.el),
+        rect: unionRect(a.r, b.r),
       });
       break;
     }
@@ -219,6 +241,7 @@ export function pageAudit(opts) {
         message: `Текст обрізається по горизонталі: вміст ${el.scrollWidth}px не вміщується в блок ${el.clientWidth}px.`,
         selector: cssPath(el),
         details: (el.textContent || '').trim().slice(0, 80),
+        rect: rectData(el.getBoundingClientRect()),
       });
     } else if (clipY) {
       push({
@@ -227,6 +250,7 @@ export function pageAudit(opts) {
         message: `Текст обрізається по вертикалі: вміст ${el.scrollHeight}px не вміщується в блок ${el.clientHeight}px.`,
         selector: cssPath(el),
         details: (el.textContent || '').trim().slice(0, 80),
+        rect: rectData(el.getBoundingClientRect()),
       });
     }
   }
@@ -246,6 +270,7 @@ export function pageAudit(opts) {
         message: `Розмір шрифту ${round(fs)}px — менший за рекомендований мінімум 12px.`,
         selector: sel,
         details: (el.textContent || '').trim().slice(0, 80),
+        rect: rectData(el.getBoundingClientRect()),
       });
     }
   }
@@ -263,6 +288,7 @@ export function pageAudit(opts) {
         message: 'Зображення не завантажилося.',
         selector: cssPath(img),
         details: src.slice(0, 200),
+        rect: rectData(img.getBoundingClientRect()),
       });
       continue;
     }
@@ -276,6 +302,7 @@ export function pageAudit(opts) {
           severity: 'warning',
           message: `Пропорції зображення спотворені: оригінал ${img.naturalWidth}×${img.naturalHeight}px, відображається ${Math.round(r.width)}×${Math.round(r.height)}px.`,
           selector: cssPath(img),
+          rect: rectData(r),
         });
       }
     }
@@ -318,6 +345,7 @@ export function pageAudit(opts) {
           message: `Інтерактивний елемент замалий для натискання пальцем: ${round(r.width)}×${round(r.height)}px (мінімум 24×24px).`,
           selector: cssPath(el),
           details: (el.textContent || el.getAttribute('aria-label') || '').trim().slice(0, 60),
+          rect: rectData(r),
         });
       }
     }
