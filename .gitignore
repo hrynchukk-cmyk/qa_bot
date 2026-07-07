@@ -1,6 +1,7 @@
 node_modules/
 qa-report/
 demo-report/
+runs/
 *.log
 .env
 .DS_Store
